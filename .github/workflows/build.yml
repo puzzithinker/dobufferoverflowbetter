@@ -14,10 +14,23 @@ jobs:
       - name: Install toolchains
         run: |
           sudo apt-get update -qq
-          sudo apt-get install -y -qq mingw-w64 make gcc binutils gcc-aarch64-linux-gnu
+          sudo apt-get install -y -qq \
+            mingw-w64 make gcc binutils \
+            gcc-aarch64-linux-gnu binutils-mingw-w64
+
+      - name: Show toolchain paths
+        run: |
+          set -e
+          which make gcc python3 file nm
+          which i686-w64-mingw32-gcc i686-w64-mingw32-objdump i686-w64-mingw32-nm
+          which x86_64-w64-mingw32-gcc x86_64-w64-mingw32-objdump x86_64-w64-mingw32-nm
+          which aarch64-linux-gnu-gcc
+          i686-w64-mingw32-gcc --version | head -1
+          x86_64-w64-mingw32-gcc --version | head -1
 
       - name: Build all first-party labs
         run: |
+          set -euo pipefail
           make clean
           make all
           make linux
@@ -28,30 +41,62 @@ jobs:
           make -C labs/03-linux-stack-bof -f Makefile.nx
           make aarch64
 
+      # Note: in GitHub Actions `run:` scripts, write shell `$` as `$$`
+      # so the runner does not eat them ($$ -> $ for bash).
       - name: Verify PE/ELF outputs
         run: |
-          set -e
-          file labs/01-x86-stack-bof/bin/dobetter_x86.exe | grep -q PE32
-          file labs/02-x64-stack-bof/bin/dobetter_x64.exe | grep -q PE32+
-          file labs/03-linux-stack-bof/bin/dobetter_linux | grep -q ELF
-          file labs/04-x86-seh-bof/bin/dobetter_seh_x86.exe | grep -q PE32
-          file labs/05-x86-dep-rop/bin/dobetter_rop_x86.exe | grep -q PE32
-          file labs/06-x64-dep-rop/bin/dobetter_rop_x64.exe | grep -q PE32+
-          file labs/07-linux-nx-ret2win/bin/dobetter_linux_ret2win | grep -q ELF
-          file labs/08-aarch64-stack-bof/bin/dobetter_aarch64 | grep -q ARM
-          file labs/03-linux-stack-bof/bin/dobetter_linux_nx | grep -q ELF
-          i686-w64-mingw32-objdump -x labs/05-x86-dep-rop/bin/dobetter_rop_x86.exe | grep -q NX_COMPAT
-          x86_64-w64-mingw32-objdump -x labs/06-x64-dep-rop/bin/dobetter_rop_x64.exe | grep -q NX_COMPAT
-          i686-w64-mingw32-objdump -d labs/01-x86-stack-bof/bin/dobetter_x86.exe | grep -q 'ff e4'
-          i686-w64-mingw32-nm labs/05-x86-dep-rop/bin/dobetter_rop_x86.exe | grep -q ' win$'
-          # Linux ret2win smoke (OFFSET may need extract; try common)
-          WIN=$(nm labs/07-linux-nx-ret2win/bin/dobetter_linux_ret2win | awk '/ T win$$/{print $$1}')
-          OFFSET=152 WIN=0x$$WIN python3 labs/07-linux-nx-ret2win/exploits/06_ret2win.py | grep -q '\[WIN\]'
+          set -euo pipefail
+          trap 'echo "FAILED on command: $$BASH_COMMAND"; exit 1' ERR
+
+          echo "== file(1) type checks =="
+          file labs/01-x86-stack-bof/bin/dobetter_x86.exe | tee /tmp/file01 | grep -qi 'pe32'
+          file labs/02-x64-stack-bof/bin/dobetter_x64.exe | tee /tmp/file02 | grep -qi 'pe32+'
+          file labs/03-linux-stack-bof/bin/dobetter_linux | tee /tmp/file03 | grep -qi 'elf'
+          file labs/04-x86-seh-bof/bin/dobetter_seh_x86.exe | tee /tmp/file04 | grep -qi 'pe32'
+          file labs/05-x86-dep-rop/bin/dobetter_rop_x86.exe | tee /tmp/file05 | grep -qi 'pe32'
+          file labs/06-x64-dep-rop/bin/dobetter_rop_x64.exe | tee /tmp/file06 | grep -qi 'pe32+'
+          file labs/07-linux-nx-ret2win/bin/dobetter_linux_ret2win | tee /tmp/file07 | grep -qi 'elf'
+          file labs/08-aarch64-stack-bof/bin/dobetter_aarch64 | tee /tmp/file08 | grep -qiE 'arm|aarch64'
+          file labs/03-linux-stack-bof/bin/dobetter_linux_nx | tee /tmp/file09 | grep -qi 'elf'
+
+          echo "== NX_COMPAT (DEP on) =="
+          i686-w64-mingw32-objdump -x labs/05-x86-dep-rop/bin/dobetter_rop_x86.exe \
+            | tee /tmp/objdump05 | grep -qi 'NX_COMPAT'
+          x86_64-w64-mingw32-objdump -x labs/06-x64-dep-rop/bin/dobetter_rop_x64.exe \
+            | tee /tmp/objdump06 | grep -qi 'NX_COMPAT'
+
+          echo "== JMP ESP gadget (ff e4) =="
+          i686-w64-mingw32-objdump -d labs/01-x86-stack-bof/bin/dobetter_x86.exe \
+            | tr -s ' \t' ' ' | tee /tmp/objdump01 | grep -qi 'ff e4'
+
+          echo "== lab05 win symbol =="
+          i686-w64-mingw32-nm labs/05-x86-dep-rop/bin/dobetter_rop_x86.exe \
+            | tr -s ' \t' ' ' | tee /tmp/nm05 | grep -qE ' [Tt] _?win$$'
+
+          echo "== Linux ret2win smoke =="
+          WIN="$$(nm labs/07-linux-nx-ret2win/bin/dobetter_linux_ret2win \
+            | awk '/ [Tt] win$$/ { print $$1; exit }')"
+          if [ -z "$$WIN" ]; then
+            echo "ERROR: could not find symbol 'win'"
+            nm labs/07-linux-nx-ret2win/bin/dobetter_linux_ret2win || true
+            exit 1
+          fi
+          WIN_HEX="0x$${WIN}"
+          OFFSET=152
+          echo "Using WIN=$${WIN_HEX} OFFSET=$${OFFSET}"
+          OFFSET="$${OFFSET}" WIN="$${WIN_HEX}" \
+            python3 labs/07-linux-nx-ret2win/exploits/06_ret2win.py \
+            | tee /tmp/ret2win
+          grep -q '\[WIN\]' /tmp/ret2win
+
+          echo "== make meta =="
           make meta
+
           echo "all artifacts OK"
 
       - name: Python syntax check
         run: |
+          set -euo pipefail
           python3 -m py_compile labs/01-x86-stack-bof/exploits/*.py
           python3 -m py_compile labs/02-x64-stack-bof/exploits/*.py
           python3 -m py_compile labs/03-linux-stack-bof/exploits/*.py
