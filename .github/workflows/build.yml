@@ -41,12 +41,12 @@ jobs:
           make -C labs/03-linux-stack-bof -f Makefile.nx
           make aarch64
 
-      # Note: in GitHub Actions `run:` scripts, write shell `$` as `$$`
-      # so the runner does not eat them ($$ -> $ for bash).
+      # Use ordinary bash $VAR / $1 here. Do NOT write $$ — on this runner
+      # $$ is the shell PID (e.g. 3300{WIN_HEX}), not a GHA escape to $.
       - name: Verify PE/ELF outputs
         run: |
           set -euo pipefail
-          trap 'echo "FAILED on command: $$BASH_COMMAND"; exit 1' ERR
+          trap 'echo "FAILED on command: $BASH_COMMAND"; exit 1' ERR
 
           echo "== file(1) type checks =="
           file labs/01-x86-stack-bof/bin/dobetter_x86.exe | tee /tmp/file01 | grep -qi 'pe32'
@@ -71,20 +71,20 @@ jobs:
 
           echo "== lab05 win symbol =="
           i686-w64-mingw32-nm labs/05-x86-dep-rop/bin/dobetter_rop_x86.exe \
-            | tr -s ' \t' ' ' | tee /tmp/nm05 | grep -qE ' [Tt] _?win$$'
+            | tr -s ' \t' ' ' | tee /tmp/nm05 | grep -qE ' [Tt] _?win$'
 
           echo "== Linux ret2win smoke =="
-          WIN="$$(nm labs/07-linux-nx-ret2win/bin/dobetter_linux_ret2win \
-            | awk '/ [Tt] win$$/ { print $$1; exit }')"
-          if [ -z "$$WIN" ]; then
+          WIN="$(nm labs/07-linux-nx-ret2win/bin/dobetter_linux_ret2win \
+            | awk '/ [Tt] win$/ { print $1; exit }')"
+          if [ -z "$WIN" ]; then
             echo "ERROR: could not find symbol 'win'"
             nm labs/07-linux-nx-ret2win/bin/dobetter_linux_ret2win || true
             exit 1
           fi
-          WIN_HEX="0x$${WIN}"
+          WIN_HEX="0x${WIN}"
           OFFSET=152
-          echo "Using WIN=$${WIN_HEX} OFFSET=$${OFFSET}"
-          OFFSET="$${OFFSET}" WIN="$${WIN_HEX}" \
+          echo "Using WIN=${WIN_HEX} OFFSET=${OFFSET}"
+          OFFSET="${OFFSET}" WIN="${WIN_HEX}" \
             python3 labs/07-linux-nx-ret2win/exploits/06_ret2win.py \
             | tee /tmp/ret2win
           grep -q '\[WIN\]' /tmp/ret2win
