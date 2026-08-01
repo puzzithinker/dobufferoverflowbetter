@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 420" font-family="ui-monospace, Consolas, monospace" font-size="12">
+  <rect width="720" height="420" fill="#1e1e1e"/>
+  <rect x="0" y="0" width="720" height="28" fill="#2d2d2d"/>
+  <text x="12" y="18" fill="#cccccc" font-size="13">WinDBGX — mock session (replace with real PNG when available)</text>
+  <rect x="8" y="40" width="704" height="200" fill="#0c0c0c" stroke="#3c3c3c"/>
+  <text x="16" y="60" fill="#6a9955">0:000&gt; !load pykd</text>
+  <text x="16" y="80" fill="#d4d4d4">pykd bootstrapper version: 2.0.0.x</text>
+  <text x="16" y="100" fill="#6a9955">0:000&gt; as !mona !py -3.9 C:\Tools\mona3\mona.py</text>
+  <text x="16" y="120" fill="#6a9955">0:000&gt; !mona config -set workingfolder C:\mona-work\%p</text>
+  <text x="16" y="140" fill="#6a9955">0:000&gt; g</text>
+  <text x="16" y="170" fill="#f44747">(1234.5678): Access violation - code c0000005</text>
+  <text x="16" y="190" fill="#dcdcaa">eax=41414141 ebx=00000000 ecx=... edx=...</text>
+  <text x="16" y="210" fill="#dcdcaa">eip=42424242 esp=00xxff00 ebp=41414141</text>
+  <rect x="8" y="250" width="704" height="150" fill="#0c0c0c" stroke="#3c3c3c"/>
+  <text x="16" y="270" fill="#6a9955">0:000&gt; !mona findmsp</text>
+  <text x="16" y="295" fill="#9cdcfe">[+] Looking for cyclic pattern in memory</text>
+  <text x="16" y="315" fill="#ce9178">EIP contains normal pattern : ... (offset 154)</text>
+  <text x="16" y="335" fill="#9cdcfe">[+] Examining registers</text>
+  <text x="16" y="360" fill="#6a9955">0:000&gt; !mona jmp -r esp -cpb "\x00\x0a"</text>
+  <text x="16" y="385" fill="#8b9bb4" font-size="11">See docs/images/README.md to drop real screenshots alongside this mock.</text>
+</svg>

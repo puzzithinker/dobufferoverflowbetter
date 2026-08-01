@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 300" font-family="ui-monospace, Consolas, monospace" font-size="12">
+  <rect width="720" height="300" fill="#1e1e1e"/>
+  <rect x="0" y="0" width="720" height="28" fill="#2d2d2d"/>
+  <text x="12" y="18" fill="#cccccc">WinDBG — !exchain after SEH overflow (mock)</text>
+  <text x="16" y="60" fill="#6a9955">0:000&gt; !exchain</text>
+  <text x="16" y="90" fill="#d4d4d4">00xxfa00: 42424242</text>
+  <text x="40" y="115" fill="#ce9178">Invalid exception stack at 42424242</text>
+  <text x="16" y="150" fill="#d4d4d4">00xxfa04: 43434343</text>
+  <text x="40" y="175" fill="#9cdcfe">Invalid exception stack at 43434343</text>
+  <text x="16" y="210" fill="#8b9bb4">Markers from 04_nseh_seh_control.py (BBBB / CCCC) when OFFSET is correct.</text>
+  <text x="16" y="240" fill="#6a9955">0:000&gt; !mona seh -cpb "\x00\x0a"</text>
+  <text x="16" y="270" fill="#8b9bb4">Next: short jmp in nSEH + POP/POP/RET in SEH (lab 04 tutorial).</text>
+</svg>

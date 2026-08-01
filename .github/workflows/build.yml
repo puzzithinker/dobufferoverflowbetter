@@ -1,0 +1,63 @@
+name: build-labs
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+
+jobs:
+  cross-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install toolchains
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq mingw-w64 make gcc binutils gcc-aarch64-linux-gnu
+
+      - name: Build all first-party labs
+        run: |
+          make clean
+          make all
+          make linux
+          make seh
+          make rop
+          make rop64
+          make linux-ret2win
+          make -C labs/03-linux-stack-bof -f Makefile.nx
+          make aarch64
+
+      - name: Verify PE/ELF outputs
+        run: |
+          set -e
+          file labs/01-x86-stack-bof/bin/dobetter_x86.exe | grep -q PE32
+          file labs/02-x64-stack-bof/bin/dobetter_x64.exe | grep -q PE32+
+          file labs/03-linux-stack-bof/bin/dobetter_linux | grep -q ELF
+          file labs/04-x86-seh-bof/bin/dobetter_seh_x86.exe | grep -q PE32
+          file labs/05-x86-dep-rop/bin/dobetter_rop_x86.exe | grep -q PE32
+          file labs/06-x64-dep-rop/bin/dobetter_rop_x64.exe | grep -q PE32+
+          file labs/07-linux-nx-ret2win/bin/dobetter_linux_ret2win | grep -q ELF
+          file labs/08-aarch64-stack-bof/bin/dobetter_aarch64 | grep -q ARM
+          file labs/03-linux-stack-bof/bin/dobetter_linux_nx | grep -q ELF
+          i686-w64-mingw32-objdump -x labs/05-x86-dep-rop/bin/dobetter_rop_x86.exe | grep -q NX_COMPAT
+          x86_64-w64-mingw32-objdump -x labs/06-x64-dep-rop/bin/dobetter_rop_x64.exe | grep -q NX_COMPAT
+          i686-w64-mingw32-objdump -d labs/01-x86-stack-bof/bin/dobetter_x86.exe | grep -q 'ff e4'
+          i686-w64-mingw32-nm labs/05-x86-dep-rop/bin/dobetter_rop_x86.exe | grep -q ' win$'
+          # Linux ret2win smoke (OFFSET may need extract; try common)
+          WIN=$(nm labs/07-linux-nx-ret2win/bin/dobetter_linux_ret2win | awk '/ T win$$/{print $$1}')
+          OFFSET=152 WIN=0x$$WIN python3 labs/07-linux-nx-ret2win/exploits/06_ret2win.py | grep -q '\[WIN\]'
+          make meta
+          echo "all artifacts OK"
+
+      - name: Python syntax check
+        run: |
+          python3 -m py_compile labs/01-x86-stack-bof/exploits/*.py
+          python3 -m py_compile labs/02-x64-stack-bof/exploits/*.py
+          python3 -m py_compile labs/03-linux-stack-bof/exploits/*.py
+          python3 -m py_compile labs/04-x86-seh-bof/exploits/*.py
+          python3 -m py_compile labs/05-x86-dep-rop/exploits/*.py
+          python3 -m py_compile labs/06-x64-dep-rop/exploits/*.py
+          python3 -m py_compile labs/07-linux-nx-ret2win/exploits/*.py
+          python3 -m py_compile labs/vulnserver-practice/exploits/*.py
+          python3 -m py_compile scripts/extract_lab_meta.py

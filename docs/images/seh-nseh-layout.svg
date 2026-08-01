@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 380" font-family="ui-monospace, monospace" font-size="13">
+  <rect width="560" height="380" fill="#0f1419"/>
+  <text x="20" y="28" fill="#e7ecf3" font-size="16">Classic SEH exploit layout (lab 04)</text>
+  <rect x="80" y="50" width="400" height="44" fill="#1a2a1a" stroke="#3ecf8e" stroke-width="2"/>
+  <text x="100" y="78" fill="#b8f0d4">shellcode / NOP sled</text>
+  <rect x="80" y="94" width="400" height="44" fill="#2a1a30" stroke="#c79bff" stroke-width="2"/>
+  <text x="100" y="122" fill="#e6d4ff">SEH = pointer to POP POP RET</text>
+  <rect x="80" y="138" width="400" height="44" fill="#302818" stroke="#e0a14a" stroke-width="2"/>
+  <text x="100" y="166" fill="#f0d9a8">nSEH = short jmp (e.g. EB 06 90 90)</text>
+  <rect x="80" y="182" width="400" height="70" fill="#1c2430" stroke="#7a8494"/>
+  <text x="100" y="220" fill="#c5d0e0">padding to nSEH (often 512 bytes in lab 04)</text>
+  <path d="M 500 116 L 530 116 L 530 160 L 500 160" fill="none" stroke="#c79bff" stroke-width="1.5" marker-end="url(#a)"/>
+  <text x="20" y="290" fill="#c5d0e0" font-size="12">1. Exception → OS uses SEH handler (P/P/R)</text>
+  <text x="20" y="315" fill="#c5d0e0" font-size="12">2. RET lands on nSEH → short jump into shellcode</text>
+  <text x="20" y="350" fill="#8b9bb4" font-size="11">WinDBG: !exchain    mona: !mona seh</text>
+</svg>

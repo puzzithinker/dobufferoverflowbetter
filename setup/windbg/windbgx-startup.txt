@@ -1,0 +1,8 @@
+!load pykd
+as !mona !py -3.9 C:\Tools\mona3\mona.py
+
+# WinDBGX: File > Settings > Debugging settings > Startup
+# Paste the two lines above (without this comment block).
+# Adjust -3.9 if !pykd.info shows a different installed version (e.g. -3.14).
+# After attach, optionally:
+#   !mona config -set workingfolder C:\mona-work\%p

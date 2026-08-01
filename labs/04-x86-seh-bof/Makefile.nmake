@@ -1,0 +1,18 @@
+# MSVC x86 Native Tools prompt
+OUTDIR = bin
+TARGET = $(OUTDIR)\dobetter_seh_x86.exe
+SRC    = src\dobetter_seh_x86.c
+
+CFLAGS = /nologo /W3 /Od /Zi /GS- /D_CRT_SECURE_NO_WARNINGS /DWIN32 /D_WIN32_WINNT=0x0601
+LDFLAGS = /nologo /DEBUG /DYNAMICBASE:NO /NXCOMPAT:NO /SUBSYSTEM:CONSOLE ws2_32.lib
+
+all: $(OUTDIR) $(TARGET)
+
+$(OUTDIR):
+	if not exist $(OUTDIR) mkdir $(OUTDIR)
+
+$(TARGET): $(SRC)
+	cl $(CFLAGS) /Fe$(TARGET) /Fd$(OUTDIR)\ $(SRC) /link $(LDFLAGS)
+
+clean:
+	-del /q $(OUTDIR)\* 2>nul

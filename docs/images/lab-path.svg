@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 240" font-family="system-ui, sans-serif" font-size="11">
+  <rect width="760" height="240" fill="#0f1419"/>
+  <text x="20" y="28" fill="#e7ecf3" font-size="16" font-family="ui-monospace, monospace">Learning path (first-party labs)</text>
+  <rect x="12" y="55" width="100" height="50" rx="6" fill="#1c2430" stroke="#5b8def"/>
+  <text x="28" y="78" fill="#e7ecf3" font-weight="600">01 SRP</text>
+  <text x="28" y="95" fill="#8b9bb4">:31337</text>
+  <rect x="128" y="55" width="100" height="50" rx="6" fill="#1c2430" stroke="#5b8def"/>
+  <text x="144" y="78" fill="#e7ecf3" font-weight="600">02 x64</text>
+  <text x="144" y="95" fill="#8b9bb4">:31338</text>
+  <rect x="244" y="55" width="100" height="50" rx="6" fill="#1c2430" stroke="#3ecf8e"/>
+  <text x="258" y="78" fill="#e7ecf3" font-weight="600">03 Linux</text>
+  <text x="258" y="95" fill="#8b9bb4">elf</text>
+  <rect x="360" y="55" width="100" height="50" rx="6" fill="#1c2430" stroke="#e0a14a"/>
+  <text x="376" y="78" fill="#e7ecf3" font-weight="600">04 SEH</text>
+  <text x="376" y="95" fill="#8b9bb4">:31340</text>
+  <rect x="476" y="55" width="100" height="50" rx="6" fill="#1c2430" stroke="#f0a0a0"/>
+  <text x="492" y="78" fill="#e7ecf3" font-weight="600">05 ROP</text>
+  <text x="492" y="95" fill="#8b9bb4">:31341 DEP</text>
+  <rect x="592" y="55" width="140" height="50" rx="6" fill="#1c2430" stroke="#c79bff"/>
+  <text x="612" y="78" fill="#e7ecf3" font-weight="600">Vulnserver</text>
+  <text x="612" y="95" fill="#8b9bb4">practice</text>
+  <text x="20" y="150" fill="#8b9bb4">01 → 04 SEH / egghunter → 05 DEP ret2win → courses. 02/03 parallel after basics.</text>
+  <text x="20" y="180" fill="#8b9bb4">CI builds all of the above via make all linux seh rop</text>
+  <text x="20" y="210" fill="#8b9bb4">Next: ASLR, full ROP chains, Corelan / OSED (curriculum 07)</text>
+</svg>

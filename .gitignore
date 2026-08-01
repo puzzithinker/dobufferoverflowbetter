@@ -1,0 +1,68 @@
+# Build outputs
+*.o
+*.obj
+*.exe
+*.pdb
+*.ilk
+*.exp
+*.lib
+*.dll
+*.idb
+*.iobj
+*.ipdb
+bin/
+build/
+out/
+x64/
+Win32/
+Debug/
+Release/
+.vs/
+*.user
+*.suo
+*.ncb
+*.sdf
+*.opensdf
+CMakeCache.txt
+CMakeFiles/
+cmake-install.cmake
+Makefile.local
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.env
+
+# OS / editor
+.DS_Store
+Thumbs.db
+*.swp
+*~
+.idea/
+.vscode/
+!.vscode/extensions.json
+
+# Mirrored third-party tools (populated by setup scripts)
+tools/mona3/
+tools/CorelanTraining/
+
+# Student working folders / mona output
+workingfolder/
+*.md.mona
+findmsp.md
+rop.md
+stackpivot.md
+bytearray.bin
+pattern.txt
+
+# Exploit artifacts
+msf.rc
+shellcode.bin
+payload.bin
+pattern_offset.txt
+
+# Accidental package downloads
+*.deb
+*.rpm

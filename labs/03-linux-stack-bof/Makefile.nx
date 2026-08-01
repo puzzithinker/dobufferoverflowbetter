@@ -1,0 +1,26 @@
+# Optional: rebuild WITH NX (non-executable stack) for ret2libc / ROP practice.
+#   make -f Makefile.nx
+# Stack shellcode will fail; use code reuse instead.
+
+CC     ?= gcc
+CFLAGS ?= -O0 -g -Wall -Wextra -fno-stack-protector -no-pie
+# note: no -z execstack  → GNU_STACK is RW only (NX)
+
+SRC    = src/dobetter_linux.c
+OUTDIR = bin
+TARGET = $(OUTDIR)/dobetter_linux_nx
+
+.PHONY: all clean
+
+all: $(TARGET)
+
+$(OUTDIR):
+	mkdir -p $(OUTDIR)
+
+$(TARGET): $(SRC) | $(OUTDIR)
+	$(CC) $(CFLAGS) -o $@ $<
+	@echo "Built $@ (expect NX / non-exec stack)"
+	@readelf -l $@ | grep -A1 GNU_STACK || true
+
+clean:
+	rm -f $(TARGET)
