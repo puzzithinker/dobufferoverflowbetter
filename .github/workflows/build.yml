@@ -9,7 +9,8 @@ jobs:
   cross-build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      # v5+ runs on Node.js 24 (v4 targets Node 20 and triggers deprecation warnings)
+      - uses: actions/checkout@v5
 
       - name: Install toolchains
         run: |
