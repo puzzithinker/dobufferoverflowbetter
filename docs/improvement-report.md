@@ -208,21 +208,20 @@ the old name.
 
 **Observed.** [labs/04-x86-seh-bof/src/dobetter_seh_x86.c](../labs/04-x86-seh-bof/src/dobetter_seh_x86.c)
 `trigger_seh_overflow` copies with `for (i = 0; i < len; i++)` into
-`frame.buf`. Lab 01’s source comment says a single `memcpy` is required so
-the copy does not corrupt its own index. On the MinGW PE in this workspace,
-`trigger_seh_overflow` keeps the buffer at `ebp-0x218`, the nSEH slot at
-`ebp-0x18` (512 bytes from the buffer, matching the appendix), and the loop
-index at `ebp-0xc`. That index is 524 bytes from the start of the buffer,
-four bytes past the SEH slot.
-[labs/04-x86-seh-bof/exploits/05_badchars.py](../labs/04-x86-seh-bof/exploits/05_badchars.py)
-sends padding, eight marker bytes, then the test bytes. With the documented
-offset 512, those test bytes start at 520 and therefore land on the index.
+`frame.buf`. The loop index is a local in that same function. Lab 01’s
+source comment says a single `memcpy` is required so the copy does not
+corrupt its own index. [labs/04-x86-seh-bof/exploits/05_badchars.py](../labs/04-x86-seh-bof/exploits/05_badchars.py)
+appends its test bytes after the nSEH and SEH markers, so a frame that
+places the index just past those fields will corrupt the counter. Confirm
+the frame with the compiler. Do not treat the documented 512-byte buffer
+length as proof the index is safe.
 
 The same function faults after every copy, including a short name. There is
 no `name_len < 64` safe path.
 [labs/04-x86-seh-bof/exploits/01_connect.py](../labs/04-x86-seh-bof/exploits/01_connect.py)
 still sends `student`, the same happy-path script as labs 01–03. The lab 04
-tutorial never mentions that script. It starts at the crash step.
+tutorial never names `01_connect.py`. Its first exploit command is
+`exploits/02_crash.py`, after a build-and-attach section.
 
 **Why it matters.** A bad-character compare will show a torn buffer even when
 the socket delivered the bytes. A learner who runs script 01 first, as lab 01
@@ -521,10 +520,15 @@ expect the `Hello` reply. Glob `labs/*/exploits/*.py` for `py_compile`. Make
 the lab 01 recipe fail when the compiler fails. Keep listener and qemu work
 on the roadmap rows that already describe them.
 
-### 13. Eight copies of the same helper, and a page that still says “both labs”
+### 13. Eight helper copies, and a page that still says “both labs”
 
-**Observed.** Each lab’s `exploits/common.py` reimplements `cyclic`,
-`connect`, and `send_line`. [labs/shared/python_helpers.md](../labs/shared/python_helpers.md)
+**Observed.** Eight `exploits/common.py` files each define their own
+`cyclic`. They do not share one send API. Labs 01, 02, 04, 05, and 06
+define `connect` and `send_line`. Labs 03 and 07 define `send_payload`
+and do not define `connect` or `send_line`.
+[labs/vulnserver-practice/exploits/common.py](../labs/vulnserver-practice/exploits/common.py)
+defines `connect` and `cyclic` and does not define `send_line`.
+[labs/shared/python_helpers.md](../labs/shared/python_helpers.md)
 is not linked from [labs/README.md](../labs/README.md) or the curriculum,
 and it still says payloads often must avoid a null byte.
 Lab 05 has two ret2win scripts (`06_ret2win.py` and
@@ -532,8 +536,9 @@ Lab 05 has two ret2win scripts (`06_ret2win.py` and
 (`08_vp_skeleton.py` and `10_vp_layout_notes.py`). The duplicates are how
 the stale numbers in P0 item 2 survive.
 
-**Why it matters.** A protocol fix has to be repeated eight times. Students
-who find the helper page get the pre-`memcpy` rules.
+**Why it matters.** A protocol fix has to be repeated in each copy, and the
+copies already disagree on the function names. Students who find the helper
+page get the pre-`memcpy` rules.
 
 **Direction.** One shared helper module, or delete the page if mona is the
 intended pattern tool. Keep a single ret2win script and a single VP skeleton
